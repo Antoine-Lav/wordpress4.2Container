@@ -119,6 +119,38 @@ RUN apt-get -y install php5-xsl php5-memcached
 ADD run-php5.sh /run.sh
 RUN chmod 755 /*.sh
 
+RUN service apache2 start
+RUN service mysql start
+# Install and add DB Data
+ENV MYSQL_ALLOW_EMPTY_PASSWORD=true
+ENV MYSQL_USER=root
+ENV MYSQL_ROOT_PASSWORD = root
+ENV MYSQL_PASSWORD=root
+ENV MYSQL_DATABASE=billsDB
+COPY ./sql-scripts/ /docker-entrypoint-initdb.d/
+COPY ./sql-scripts/billSchema.sql .
+
+
+# Install Wordpress
+RUN apt install wget
+RUN cd /var/www
+RUN wget https://wordpress.org/wordpress-4.2.32.tar.gz
+RUN tar -xvf wordpress-4.2.32.tar.gz
+RUN cd wordpress
+RUN mv * /var/www/html
+RUN cd ..
+RUN rm -d wordpress
+RUN rm wordpress-4.2.32.tar.gz
+RUN cd html
+RUN rm index.html
+RUN cd ..
+RUN chown -R www-data:www-data html
+RUN chmod -R 755 html
+RUN cd / apt install vim vi startup.sh
+RUN service apache2 start
+RUN service mysql start
+RUN tail -f /dev/null
+
 EXPOSE 80 3306
 
 CMD ["/run.sh"]
